@@ -10,7 +10,6 @@ export function Authenticate() {
   const code = (new URLSearchParams(window.location.search)).get('code')
 
   useEffect(() => {
-    console.log(process.env.REACT_APP_CLIENT_ID, process.env.REACT_APP_CLIENT_SECRET)
     const requestOptions = {
       method: 'POST',
       body: new URLSearchParams({ 
@@ -25,10 +24,9 @@ export function Authenticate() {
     secureFetch("https://discord.com/api/oauth2/token", requestOptions)
     .then(res => res.json())
     .then(
-      (result) => {
+      async (result) => {
         console.log(result)
         dispatch(authenticate(result))
-        getUserInfo(result.access_token, dispatch)
         window.location.href = "/"
       },
       (error) => {
@@ -54,7 +52,7 @@ export function Authenticate() {
 }
 
 
-function getUserInfo(token, dispatch) {
+async function getUserInfo(token, dispatch) {
   secureFetch("https://discordapp.com/api/users/@me", {
     headers: { Authorization: `Bearer ${token}` }
   })

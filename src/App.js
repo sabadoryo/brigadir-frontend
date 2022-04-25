@@ -2,31 +2,52 @@ import { Container } from '@chakra-ui/react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Welcome } from './components/welcome/Welcome'
 import Header from './components/layout/header'
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Login from './components/login/Login'
-import isAuthenticated from './components/login/isAuthenticated';
-import { login } from './redux/slices/authSlice';
+import hasToken from './components/login/isAuthenticated';
+import { login, setUser } from './redux/slices/authSlice';
 import { useSelector, useDispatch } from 'react-redux'
 import { Profile } from './components/profile/Profile';
+import { Clanwar } from './components/clanwars/Clanwar';
+import secureFetch from './reusable/secureFetch';
+import QueuesList from './components/clanwars/Guild';
+import { Queue } from './components/clanwars/Queue';
 
 function App() {
   const dispatch = useDispatch()
 
-  if (!isAuthenticated()) {
+
+  useEffect(()=> {  
+    if (hasToken()) {
+      getUserInfo().then(res => {
+        dispatch(setUser(res))
+      })
+    }
+  }, [dispatch])
+
+  if (!hasToken()) {
     return (<Login/>)
   }
-
-  dispatch(login())
 
   return (
     <div>
       <Header />
       <Routes>
         <Route path="/profile" element={<Profile/>}/>
+        <Route path="/clanwars" element={<Clanwar/>}/>
+        <Route path="/clanwars/guilds/:id" element={<QueuesList/>}/>
+        <Route path="/clanwars/guilds/:guild_id/queues/:queue_id" element={<Queue/>}/>
         <Route path="/" element={<Welcome />} />
       </Routes>
     </div>
   );
+}
+
+async function getUserInfo() {
+  return secureFetch("https://discordapp.com/api/users/@me", {
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+  })
+    .then(res => res.json())
 }
 
 export default App;

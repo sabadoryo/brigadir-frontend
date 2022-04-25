@@ -15,16 +15,16 @@ export const authSlice = createSlice({
       state.isAuthenticated = false
       localStorage.removeItem('token')
     },
-    login: (state) => {
-      state.isAuthenticated = true
-    },
     setUser: (state, action) => {
+      state.isAuthenticated = true;
       state.user = action.payload
     }
   },
 })
 
 // Action creators are generated for each case reducer function
-export const { authenticate, logout, login, setUser} = authSlice.actions
+export const { authenticate, logout, setUser} = authSlice.actions
+
+export const selectUser = (state) => state.auth.user
 
 export default authSlice.reducer

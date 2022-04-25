@@ -19,26 +19,31 @@ import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
 import { Link as RouterLink} from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
-const Links = ['Clanwars', 'Leaderboard', 'Report', 'Donate'];
+const Links = [
+  {
+    name: 'Clanwars',
+    url : 'clanwars'
+  }
+];
 
 const NavLink = ({ children }) => (
   <Link
     px={2}
     py={1}
+    as={RouterLink}
     rounded={'md'}
+    to={children.url}
     _hover={{
       textDecoration: 'none',
       bg: useColorModeValue('gray.200', 'gray.700'),
-    }}
-    href={'#'}>
-    {children}
+    }}>
+    {children.name}
   </Link>
 );
 
 export default function Header() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const user = useSelector((state) => state.auth.user)
-  console.log(user)
  
     return (
       <Box bg={'gray.100'} px={4}>
@@ -51,13 +56,13 @@ export default function Header() {
           onClick={isOpen ? onClose : onOpen}
         />
         <HStack spacing={8} alignItems={'center'}>
-          <RouterLink to="/">Main</RouterLink>
+          <RouterLink to="/">Logo</RouterLink>
           <HStack
             as={'nav'}
             spacing={4}
             display={{ base: 'none', md: 'flex' }}>
             {Links.map((link) => (
-              <NavLink key={link}>{link}</NavLink>
+             <NavLink key={link.name}>{link}</NavLink>
             ))}
           </HStack>
         </HStack>
@@ -72,7 +77,7 @@ export default function Header() {
               <Avatar
                 size={'sm'}
                 src={
-                  `https://cdn.discordapp.com/avatars/${localStorage.getItem('id')}/${localStorage.getItem('avatar')}`
+                  user.id ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}` : ''
                 }
               />
             </MenuButton>
@@ -93,7 +98,7 @@ export default function Header() {
         <Box pb={4} display={{ md: 'none' }}>
           <Stack as={'nav'} spacing={4}>
             {Links.map((link) => (
-              <NavLink key={link}>{link}</NavLink>
+             <NavLink key={link.name}>{link}</NavLink>
             ))}
           </Stack>
         </Box>

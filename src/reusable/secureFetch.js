@@ -6,8 +6,8 @@ export default function secureFetch(url, data) {
         // you can call response.json() here too if you want to return json
         resolve(response);
       } else {
-        localStorage.removeItem('token')
-        window.location.href = "/"
+        // localStorage.removeItem('token')
+        // window.location.href = "/"
         switch (response.status) {
           case 404:
             console.log('Object not found');
