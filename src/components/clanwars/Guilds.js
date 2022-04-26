@@ -9,6 +9,7 @@ import {
   SimpleGrid,
   Avatar,
   useColorModeValue,
+  Spinner,
 } from '@chakra-ui/react';
 import { useSelector } from 'react-redux'
 import secureFetch from '../../reusable/secureFetch';
@@ -83,16 +84,18 @@ async function getUserGuilds(userId) {
 export default function WithSpeechBubbles() {
   const user = useSelector(selectUser);
   const [guilds, setGuilds] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (user.id) {
       getUserGuilds(user.id).then(res => {
           setGuilds(res)
+          setLoading(false)
       })
     }
   }, [user])
 
-  return (
+  return !loading ? (
     <Container maxW={'100vw'}>
         <Stack spacing={0} align={'center'} marginBottom={'10'}>
           <Heading>Выберите гильдию из списка</Heading>
@@ -118,5 +121,14 @@ export default function WithSpeechBubbles() {
             })}
         </SimpleGrid>
       </Container>
-  );
+  ) : 
+  (
+  <Spinner
+    thickness='4px'
+    speed='0.65s'
+    emptyColor='gray.200'
+    color='blue.500'
+    size='xl'
+    marginLeft={'50%'}
+  />)
 }

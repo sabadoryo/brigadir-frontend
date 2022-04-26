@@ -16,11 +16,14 @@ import {
   Button,
   Link,
   Icon,
+  Box,
+  Heading,
+  Tooltip,
 } from '@chakra-ui/react'
 import { useParams } from 'react-router';
 import secureFetch from '../../reusable/secureFetch';
 import { useSelector } from 'react-redux';
-import { CloseIcon } from '@chakra-ui/icons';
+import { CloseIcon, WarningTwoIcon } from '@chakra-ui/icons';
 
 export const Queue = () => {
   const [queue, setQueue] = useState({
@@ -33,7 +36,8 @@ export const Queue = () => {
     }],
     discipline: {
       name: ''
-    }
+    },
+    is_opened: true
   });
   const params = useParams();
   const user = useSelector((state) => state.auth.user)
@@ -45,7 +49,7 @@ export const Queue = () => {
       })
   }, [])
 
-  return (
+  return queue.is_opened ?  (
     <Container marginTop={10}>
       <Flex justifyContent={'space-between'} alignItems={'center'}>
         <Flex direction={'column'} gap={'1px'}>
@@ -54,18 +58,20 @@ export const Queue = () => {
           <Text fontSize={'xs'}>Дисциплина: {queue.discipline.name}</Text>
         </Flex>
         {!isAuthUserInQueue(queue.QueueMember, user) ? (
-           <Button colorScheme='teal' size='lg' onClick={() => joinQueue(user, queue.id, setQueue)}>
+           <Button colorScheme='teal' size='lg' onClick={() => joinQueue(user, queue.id, setQueue)} hidden={isAuthUserHost(queue, user)}>
              Войти
           </Button>
         ) : (
-          <Button colorScheme='gray' size='lg' onClick={() => leaveQueue(user, queue.id, setQueue)}>
+          <Button colorScheme='gray' size='lg' onClick={() => leaveQueue(user, queue.id, setQueue)} hidden={isAuthUserHost(queue, user)}>
              Покинуть
           </Button>
         )}
       </Flex>
       <TableContainer>
         <Table variant='striped'>
-          <TableCaption>Войдите в канал сбора, чтобы подтвердить готовность</TableCaption>
+          <TableCaption>
+            Войдите в канал сбора, чтобы подтвердить готовность              
+          </TableCaption>
           <Thead>
             <Tr>
               <Th>Список очереди: {queue.name}</Th>
@@ -82,21 +88,38 @@ export const Queue = () => {
                     <Text>{m.users.name}</Text>
                     </Flex>
                   </Td>
-                  {isAuthUserHost(queue, user) && isNotHimself(m, user) ? (
-                  <Td onClick={() => kickUser(queue, user, setQueue)}>
+                    {isAuthUserHost(queue, user) && isNotHimself(m, user) ? (
+                  <Td onClick={() => kickUser(queue, m.users, setQueue)}>
                     <CloseIcon></CloseIcon>
-                  </Td>
-                  )
-                  :
-                  (<></>)
-                }
+                  </Td> 
+                   ) 
+                   : 
+                   <></>
+                  }
               </Tr>
               )
             })}
           </Tbody>
         </Table>
       </TableContainer>
+      <Flex justify={'space-between'}>
+        <Button onClick={() => closeQueue(params.queue_id, user, setQueue)}>Закрыть очередь</Button>
+        <Tooltip label="Пока недопступно" shouldWrapChildren hasArrow mt='3'>
+          <Button colorScheme={'teal'} isDisabled>Начать КВ</Button>
+        </Tooltip>
+      </Flex>
     </Container>
+  ) : 
+  (
+    <Box textAlign="center" py={10} px={6}>
+      <WarningTwoIcon boxSize={'50px'} color={'orange.300'} />
+      <Heading as="h2" size="xl" mt={6} mb={2}>
+        Эта очередь была закрыта!
+      </Heading>
+      <Text color={'gray.500'}>
+        Вы пытаетесь зайти на закрытую очередь, пожалуйста перепровертьте ссылку!
+      </Text>
+    </Box>
   )
 }
 
@@ -113,7 +136,7 @@ function isAuthUserInQueue(queueMembers, authUser) {
 
 function joinQueue(user, queueId, setQueue) {
   const requestOptions = {
-    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` ,'Content-Type': 'application/json'},
     method: 'POST',
     body: JSON.stringify({ 
       user_discord_id: user.id 
@@ -130,7 +153,7 @@ function joinQueue(user, queueId, setQueue) {
 
 function leaveQueue(user, queueId, setQueue) {
   const requestOptions = {
-    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}`,'Content-Type': 'application/json'},
     method: 'POST',
     body: JSON.stringify({ 
       user_discord_id: user.id 
@@ -149,15 +172,15 @@ function openDiscordChannelPage(url) {
 }
 
 function isAuthUserHost(queue, user) {
-  return queue.users.discord_id === user.id
+  return queue.users.discord_id == user.id
 }
 
 function kickUser(queue, user, setQueue) {
   const requestOptions = {
-    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}`,'Content-Type': 'application/json'},
     method: 'POST',
     body: JSON.stringify({ 
-      user_discord_id: user.id 
+      user_discord_id: user.discord_id 
     })
   }
 
@@ -170,4 +193,21 @@ function kickUser(queue, user, setQueue) {
 
 function isNotHimself(member, user) {
   return member.users.discord_id !== user.id
+}
+
+function closeQueue(queueId, user, setQueue) {
+  console.log(user)
+  const requestOptions = {
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}`,'Content-Type': 'application/json'},
+    method: 'POST',
+    body: JSON.stringify({ 
+      user_discord_id: user.discord_id 
+    })
+  }
+
+  return secureFetch(`${process.env.REACT_APP_API_URL}/api/queues/${queueId}/close`, requestOptions)
+    .then(res => res.json())
+    .then(res => {
+      setQueue(res);
+    })
 }
