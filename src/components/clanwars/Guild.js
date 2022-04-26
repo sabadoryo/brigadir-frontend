@@ -34,6 +34,7 @@ import secureFetch from '../../reusable/secureFetch';
 import { selectUser } from '../../redux/slices/authSlice';
 import { Link } from 'react-router-dom';
 import { useNavigate, useParams } from 'react-router';
+import Moment from 'react-moment';
 
 const Testimonial = ({ children }) => {
   return <Box _hover={{
@@ -85,12 +86,13 @@ const TestimonialAvatar = ({
   src,
   name,
   title,
+  date,
 }) => {
   return (
     <Flex align={'center'} mt={8} direction={'column'}>
       <Avatar src={src} alt={name} mb={2} />
       <Stack spacing={-1} align={'center'}>
-        <Text fontWeight={600}>{name}</Text>
+        <Text fontWeight={600}>{name}</Text><Moment format='MM/DD/YY-HH:mm:ss'>{date}</Moment>
         <Text fontSize={'sm'} color={useColorModeValue('gray.600', 'gray.400')}>
           {title}
         </Text>
@@ -235,6 +237,7 @@ export default function QueuesList() {
                     }
                     name={q.discipline.name}
                     title={`Всего присоеденившихся: ${q.QueueMember.length}`}
+                    date={q.created_at}
                   />
                 </Testimonial>
               </Link>
