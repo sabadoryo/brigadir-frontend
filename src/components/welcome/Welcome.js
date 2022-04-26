@@ -1,6 +1,8 @@
 import { Avatar, Box, Stack, Text, useColorModeValue, chakra, SimpleGrid, Stat, StatLabel, StatNumber } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react'
 import secureFetch from '../../reusable/secureFetch';
+import BubblesBackground from '../layout/bubblesBackground';
+
 
 const openingDate = new Date('04-24-2022')
 
@@ -39,11 +41,12 @@ export const Welcome = () => {
   return (
     <Stack
       height={'100vh'}
-      bg={useColorModeValue('gray.50', 'gray.800')}
+      // bg={useColorModeValue('gray.50', 'gray.800')}
       py={16}
       overflow={'none'}
       px={8}
       align={'center'}
+      position={'relative'}
       >
 
       <Text
@@ -54,14 +57,14 @@ export const Welcome = () => {
         Статистика сайта:
       </Text>
       <Box maxW="7xl" mx={'auto'} pt={5} px={{ base: 2, sm: 12, md: 17 }}>
-      <SimpleGrid columns={{ base: 1, md: 3 }} spacing={{ base: 5, lg: 8 }}>
-        <StatsCard title={'Всего было сыграно'} stat={`${stats.clanWarsCount} квшек`} />
-        <StatsCard title={'Количество пользователей:'} stat={`${stats.usersCount}`} />
-        <StatsCard title={'Всего на КВшки было потрачено'} stat={`${stats.overallSpentHours}+ часов`} />
-        <StatsCard title={'Самая популярная дисциплина'} stat={`${stats.maxPlayedDiscipline.name}`} />
-        <StatsCard title={'Больше всего МВП у:'} stat={`${stats.maxPogLooter.name}`} />
-      </SimpleGrid>
-    </Box>
+        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={{ base: 5, lg: 8 }}>
+          <StatsCard title={'Всего было сыграно'} stat={`${stats.clanWarsCount} квшек`} />
+          <StatsCard title={'Количество пользователей:'} stat={`${stats.usersCount}`} />
+          <StatsCard title={'Всего на КВшки было потрачено'} stat={`${stats.overallSpentHours}+ часов`} />
+          <StatsCard title={'Самая популярная дисциплина'} stat={`${stats.maxPlayedDiscipline.name}`} />
+          <StatsCard title={'Больше всего МВП у:'} stat={`${stats.maxPogLooter.name}`} />
+        </SimpleGrid>
+      </Box>
     </Stack>
   )
 }

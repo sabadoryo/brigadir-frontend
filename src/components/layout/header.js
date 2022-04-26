@@ -18,6 +18,7 @@ import {
 import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
 import { Link as RouterLink} from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import './header.css'
 
 const Links = [
   {
@@ -33,9 +34,11 @@ const NavLink = ({ children }) => (
     as={RouterLink}
     rounded={'md'}
     to={children.url}
+    color={'gray.200'}
     _hover={{
       textDecoration: 'none',
-      bg: useColorModeValue('gray.200', 'gray.700'),
+      // bg: useColorModeValue('gray.200', 'gray.700'),
+      color: useColorModeValue('gray.200', 'gray.700')
     }}>
     {children.name}
   </Link>
@@ -46,7 +49,7 @@ export default function Header() {
   const user = useSelector((state) => state.auth.user)
  
     return (
-      <Box bg={'gray.100'} px={4}>
+      <Box className='header-wrapper' bg={'gray.900'} px={4}>
       <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
         <IconButton
           size={'md'}
@@ -56,7 +59,7 @@ export default function Header() {
           onClick={isOpen ? onClose : onOpen}
         />
         <HStack spacing={8} alignItems={'center'}>
-          <RouterLink to="/">Logo</RouterLink>
+          <NavLink>{{url: '/', name: 'Logo'}}</NavLink>
           <HStack
             as={'nav'}
             spacing={4}

@@ -4,6 +4,7 @@ import { Welcome } from './components/welcome/Welcome'
 import Header from './components/layout/header'
 import React, { useEffect, useState } from 'react';
 import Login from './components/login/Login'
+import BubblesBackground from './components/layout/bubblesBackground';
 import hasToken from './components/login/isAuthenticated';
 import { login, setUser } from './redux/slices/authSlice';
 import { useSelector, useDispatch } from 'react-redux'
@@ -30,7 +31,7 @@ function App() {
   }
 
   return (
-    <div>
+    <div style={{'position': 'relative'}}>
       <Header />
       <Routes>
         <Route path="/profile" element={<Profile/>}/>
@@ -39,6 +40,8 @@ function App() {
         <Route path="/clanwars/guilds/:guild_id/queues/:queue_id" element={<Queue/>}/>
         <Route path="/" element={<Welcome />} />
       </Routes>
+      <BubblesBackground />
+
     </div>
   );
 }
