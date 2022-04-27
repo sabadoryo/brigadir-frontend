@@ -1,5 +1,5 @@
   
-  $bubble-count: 50;
+  $bubble-count: 6;
   $sway-type: "sway-left-to-right", "sway-right-to-left";
   
   @function random_range($min, $max) {
@@ -38,9 +38,12 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: hsla(0, 0%, 100%, 0.1);
+      background: hsla(0, 0%, 0%, 0.1);
       border-radius: inherit;
       animation: var(--bubble-sway-type) var(--bubble-sway-duration) var(--bubble-sway-delay) ease-in-out alternate infinite;
+    }
+    &:hover {
+      display: none;
     }
   
     @for $i from 0 through $bubble-count {

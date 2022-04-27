@@ -38,7 +38,9 @@ const NavLink = ({ children }) => (
     _hover={{
       textDecoration: 'none',
       // bg: useColorModeValue('gray.200', 'gray.700'),
-      color: useColorModeValue('gray.200', 'gray.700')
+      backgroundImage: 'linear-gradient(90deg,#70e1f5 ,#ffd194)',
+      backgroundClip: 'text',
+      // color: 'black'
     }}>
     {children.name}
   </Link>
