@@ -68,7 +68,7 @@ export const Queue = () => {
         )}
       </Flex>
       <TableContainer>
-        <Table variant={''}>
+        <Table variant={'simple'}>
           <TableCaption>
             Войдите в канал сбора, чтобы подтвердить готовность              
           </TableCaption>
