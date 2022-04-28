@@ -94,7 +94,7 @@ export const Queue = () => {
                   </Td> 
                    ) 
                    : 
-                   <></>
+                   <Td></Td>
                   }
               </Tr>
               )
@@ -103,7 +103,7 @@ export const Queue = () => {
         </Table>
       </TableContainer>
       <Flex justify={'space-between'}>
-        <Button onClick={() => closeQueue(params.queue_id, user, setQueue)}>Закрыть очередь</Button>
+        <Button onClick={() => closeQueue(params.queue_id, user, setQueue)} hidden={!isAuthUserHost(queue, user)}>Закрыть очередь</Button>
         <Tooltip label="Пока недопступно" shouldWrapChildren hasArrow mt='3'>
           <Button colorScheme={'teal'} isDisabled>Начать КВ</Button>
         </Tooltip>
