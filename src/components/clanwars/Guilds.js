@@ -17,33 +17,25 @@ import { selectUser } from '../../redux/slices/authSlice';
 import { Link } from 'react-router-dom';
 
 const Testimonial = ({ children }) => {
-  return <Box>{children}</Box>;
+  return <Box _hover={{
+    transform: 'translateY(2px)',
+    boxShadow: 'lg',
+  }}>{children}</Box>;
 };
 
 const TestimonialContent = ({ children }) => {
   return (
     <Stack
-      bg={useColorModeValue('white', 'gray.800')}
       boxShadow={'lg'}
       p={8}
       rounded={'xl'}
       align={'center'}
+      bg={'rgba(256,256,256, 0.3);'}
       pos={'relative'}
       _after={{
+        color:'#000505',
         content: `""`,
-        w: 0,
-        h: 0,
-        borderLeft: 'solid transparent',
-        borderLeftWidth: 16,
-        borderRight: 'solid transparent',
-        borderRightWidth: 16,
-        borderTop: 'solid',
-        borderTopWidth: 16,
-        borderTopColor: useColorModeValue('white', 'gray.800'),
-        pos: 'absolute',
-        bottom: '-16px',
-        left: '50%',
-        transform: 'translateX(-50%)',
+        bg:'rgba(256,256,256, 0.3)',
       }}>
       {children}
     </Stack>
