@@ -85,7 +85,7 @@ function getWinner() {
 }
 
 async function chooseWinner(setWinner, users, setOverlay, onOpen) {
-  const interval = setInterval(() => setWinner(users[Math.floor(Math.random() * users.length)]),500)
+  const interval = setInterval(() => setWinner(users[Math.floor(Math.random() * users.length)]),200)
 
   getWinner()
     .then(res => {
