@@ -13,6 +13,7 @@ import { Clanwar } from './components/clanwars/Clanwar';
 import secureFetch from './reusable/secureFetch';
 import QueuesList from './components/clanwars/Guild';
 import { Queue } from './components/clanwars/Queue';
+import Gift from './components/etc/Gift';
 
 function App() {
   const dispatch = useDispatch()
@@ -38,6 +39,7 @@ function App() {
         <Route path="/clanwars" element={<Clanwar/>}/>
         <Route path="/clanwars/guilds/:id" element={<QueuesList/>}/>
         <Route path="/clanwars/guilds/:guild_id/queues/:queue_id" element={<Queue/>}/>
+        <Route path="/gifts" element={<Gift/>}/>
         <Route path="/" element={<Welcome />} />
       </Routes>
       <BubblesBackground />
