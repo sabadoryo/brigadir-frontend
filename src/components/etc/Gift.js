@@ -1,4 +1,4 @@
-import { Button, Container, Flex, FormControl, FormLabel, Heading, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Stack, Text, useDisclosure } from '@chakra-ui/react'
+import { Button, Container, Flex, FormControl, FormLabel, Heading, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Stack, Table, TableContainer, Tbody, Td, Text, Tfoot, Th, Thead, Tr, useDisclosure } from '@chakra-ui/react'
 import React, { useEffect, useState } from 'react'
 import secureFetch from '../../reusable/secureFetch'
 
@@ -12,6 +12,7 @@ const OverlayOne = () => (
 export default function Gift() {
   const [winner, setWinner] = useState({name: 'Рандомус'})
   const [users, setUsers] = useState([{name: ''}])
+  const [probabilities, setProbabilities] = useState([{name: '', value: 0}])
 
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [overlay, setOverlay] = React.useState(<OverlayOne />)
@@ -21,11 +22,35 @@ export default function Gift() {
       .then(res => {
         setUsers(res)
       })
+    getProbabilities()
+      .then(res => {
+        setProbabilities(res)
+      })
   }, [])
 
   return (
-    <Container>
-      <Flex justify={'center'} align={'center'} marginTop={'50%'}>
+    <Flex direction={'column'} justifyContent={'center'} align={'center'}>
+      <TableContainer>
+        <Table size='sm'>
+          <Thead>
+            <Tr>
+              <Th>Чел</Th>
+              <Th isNumeric>шанс выигрыша</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {probabilities.map(p => {
+              return (
+                <Tr>
+                  <Td>{p.name}</Td>
+                  <Td isNumeric>{Math.ceil(p.value)}%</Td>
+              </Tr>
+              )
+            })}
+          </Tbody>
+        </Table>
+      </TableContainer>
+      <Flex justify={'center'} align={'center'}>
       <Stack
         spacing={4}
         w={'full'}
@@ -70,7 +95,7 @@ export default function Gift() {
           </ModalFooter>
         </ModalContent>
       </Modal>
-    </Container>
+    </Flex>
   )
 }
 
@@ -96,4 +121,9 @@ async function chooseWinner(setWinner, users, setOverlay, onOpen) {
         onOpen()
       }, 10000)
     })
+}
+
+function getProbabilities() {
+  return secureFetch(`${process.env.REACT_APP_API_URL}/api/users/get-probabilities`)
+  .then(res => res.json())
 }
