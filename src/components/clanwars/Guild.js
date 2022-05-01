@@ -100,8 +100,10 @@ export default function QueuesList() {
   const [name, setName] =  useState('')
   const [disciplineId, setDisciplineId] =  useState();
   const [voiceChannelId, setVoiceChannelId] =  useState();
+  const [textChannelId, setTextChannelId] = useState();
   const [disciplines, setDisciplines] = useState([{name: null, id: null}])
   const [voiceChannels, setVoiceChannels] = useState([{name: null, id: null}])
+  const [textChannels, setTextChannels] = useState([{name: null, id: null}])
   const user = useSelector((state) => state.auth.user)
   const navigate = useNavigate()
   const toast = useToast()
@@ -128,6 +130,10 @@ export default function QueuesList() {
 
       getVoiceChannels(params.id).then(res => {
         setVoiceChannels(res)
+      })
+
+      getTextChannels(params.id).then(res => {
+        setTextChannels(res)
       })
 
   }, [params])
@@ -163,35 +169,47 @@ export default function QueuesList() {
             </FormControl>
 
             <FormControl mt={4} isInvalid={isDisciplineError}>
-            <Select onChange={(e) => setDisciplineId(e.target.value)}>
-              <option value={null}>Выберите дисциплину</option>
-              {disciplines.map(d => (
-                <option value={d.id} key={d.id}>{d.name}</option>
-              ))}
-            </Select>
-            {!isDisciplineError ? (
-                <FormHelperText>
-                  Выберите дисциплину, по которой хотите создать очередь
-                </FormHelperText>
-              ) : (
-                <FormErrorMessage>Выбор дисциплины обязателен</FormErrorMessage>
-              )}
+              <Select onChange={(e) => setDisciplineId(e.target.value)}>
+                <option value={null}>Выберите дисциплину</option>
+                {disciplines.map(d => (
+                  <option value={d.id} key={d.id}>{d.name}</option>
+                ))}
+              </Select>
+              {!isDisciplineError ? (
+                  <FormHelperText>
+                    Выберите дисциплину, по которой хотите создать очередь
+                  </FormHelperText>
+                ) : (
+                  <FormErrorMessage>Выбор дисциплины обязателен</FormErrorMessage>
+                )}
             </FormControl>
 
             <FormControl mt={4} isInvalid={isVoiceChannelsError}>
-            <Select onChange={(e) => setVoiceChannelId(e.target.value)}>
-              <option value={null}>Выберите дисциплину</option>
-              {voiceChannels.map(v => (
-                <option value={v.id} key={v.id}>{v.name}</option>
-              ))}
-            </Select>
-            {!isVoiceChannelsError ? (
-                <FormHelperText>
-                  Выберите канал на котором будет проходить сбор участников очереди
-                </FormHelperText>
-              ) : (
-                <FormErrorMessage>Выбор канала обязателен</FormErrorMessage>
-              )}
+              <Select onChange={(e) => setVoiceChannelId(e.target.value)}>
+                <option value={null}>Выберите канал сбора</option>
+                {voiceChannels.map(v => (
+                  <option value={v.id} key={v.id}>{v.name}</option>
+                ))}
+              </Select>
+              {!isVoiceChannelsError ? (
+                  <FormHelperText>
+                    Выберите канал на котором будет проходить сбор участников очереди
+                  </FormHelperText>
+                ) : (
+                  <FormErrorMessage>Выбор канала обязателен</FormErrorMessage>
+                )}
+            </FormControl>
+
+            <FormControl mt={4}>
+              <Select onChange={(e) => setTextChannelId(e.target.value)}>
+                <option value={null}>Выберите канал оповещения</option>
+                {textChannels.map(v => (
+                  <option value={v.id} key={v.id}>{v.name}</option>
+                ))}
+              </Select>
+              <FormHelperText>
+                    Выберите канал на котором будут оповещены участники о начале очереди
+              </FormHelperText>
             </FormControl>
 
           </ModalBody>
@@ -199,7 +217,7 @@ export default function QueuesList() {
           <ModalFooter>
             <Button mr={3} 
             colorScheme={'teal'} 
-            onClick={() => createQueue(name, disciplineId, voiceChannelId, params.id, user, navigate, addToast)}
+            onClick={() => createQueue(name, disciplineId, voiceChannelId, textChannelId, params.id, user, navigate, addToast)}
             isDisabled={isValidForm}
             >
               Создать
@@ -246,7 +264,7 @@ export default function QueuesList() {
 }
 
 
-function createQueue(name, discipline_id, voice_channel_id, guild_id, user, navigate, addToast) {
+function createQueue(name, discipline_id, voice_channel_id, text_channel_id,guild_id, user, navigate, addToast) {
   const requestOptions = {
     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` ,'Content-Type': 'application/json'},
     method: 'POST',
@@ -256,6 +274,7 @@ function createQueue(name, discipline_id, voice_channel_id, guild_id, user, navi
       discipline_id,
       voice_channel_id,
       guild_id,
+      text_channel_id,
     })
   }
 
@@ -277,5 +296,10 @@ function getDisciplines() {
 
 function getVoiceChannels(guildId) {
   return secureFetch(`${process.env.REACT_APP_API_URL}/api/guilds/${guildId}/channels?type=voice`)
+    .then(res => res.json())
+}
+
+function getTextChannels(guildId) {
+  return secureFetch(`${process.env.REACT_APP_API_URL}/api/guilds/${guildId}/channels?type=text`)
     .then(res => res.json())
 }
