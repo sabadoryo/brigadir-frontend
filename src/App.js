@@ -1,58 +1,53 @@
-import { Container } from '@chakra-ui/react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Welcome } from './components/welcome/Welcome'
+import {Routes, Route} from 'react-router-dom';
+import {Welcome} from './components/welcome/Welcome'
 import Header from './components/layout/header'
-import React, { useEffect, useState } from 'react';
+import React, {useEffect} from 'react';
 import Login from './components/login/Login'
-import BubblesBackground from './components/layout/bubblesBackground';
 import hasToken from './components/login/isAuthenticated';
-import { login, setUser } from './redux/slices/authSlice';
-import { useSelector, useDispatch } from 'react-redux'
-import { Profile } from './components/profile/Profile';
-import { Clanwar } from './components/clanwars/Clanwar';
+import {setUser} from './redux/slices/authSlice';
+import {useDispatch} from 'react-redux'
+import {Profile} from './components/profile/Profile';
+import {Clanwar} from './components/clanwars/Clanwar';
 import secureFetch from './reusable/secureFetch';
 import QueuesList from './components/clanwars/Guild';
-import { Queue } from './components/clanwars/Queue';
-import Gift from './components/etc/Gift';
+import {Queue} from './components/clanwars/Queue';
 
 function App() {
-  const dispatch = useDispatch()
+    const dispatch = useDispatch()
 
 
-  useEffect(()=> {  
-    if (hasToken()) {
-      getUserInfo().then(res => {
-        dispatch(setUser(res))
-      })
+    useEffect(() => {
+        if (hasToken()) {
+            getUserInfo().then(res => {
+                dispatch(setUser(res))
+            })
+        }
+    }, [dispatch])
+
+    if (!hasToken()) {
+        return (<Login/>)
     }
-  }, [dispatch])
 
-  if (!hasToken()) {
-    return (<Login/>)
-  }
-
-  return (
-    <div style={{'position': 'relative'}}>
-      <Header />
-      <Routes>
-        <Route path="/profile" element={<Profile/>}/>
-        <Route path="/clanwars" element={<Clanwar/>}/>
-        <Route path="/clanwars/guilds/:id" element={<QueuesList/>}/>
-        <Route path="/clanwars/guilds/:guild_id/queues/:queue_id" element={<Queue/>}/>
-        <Route path="/gifts" element={<Gift/>}/>
-        <Route path="/" element={<Welcome />} />
-      </Routes>
-      <BubblesBackground />
-
-    </div>
-  );
+    return (
+        <div>
+            <Header>
+                <Routes>
+                    <Route path="/profile" element={<Profile/>}/>
+                    <Route path="/clanwars" element={<Clanwar/>}/>
+                    <Route path="/clanwars/guilds/:id" element={<QueuesList/>}/>
+                    <Route path="/clanwars/guilds/:guild_id/queues/:queue_id" element={<Queue/>}/>
+                    <Route path="/" element={<Welcome/>}/>
+                </Routes>
+            </Header>
+        </div>
+    );
 }
 
 async function getUserInfo() {
-  return secureFetch("https://discordapp.com/api/users/@me", {
-    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-  })
-    .then(res => res.json())
+    return secureFetch("https://discordapp.com/api/users/@me", {
+        headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}
+    })
+        .then(res => res.json())
 }
 
 export default App;
