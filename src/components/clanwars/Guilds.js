@@ -97,13 +97,13 @@ export default function WithSpeechBubbles() {
                 <SimpleGrid columns={{base: 1, md: 3, lg: 3}} spacing={{base: 5, lg: 8}}>
                     {guilds.map((g, ind) => {
                         return (
-                            <Link to={`/clanwars/guilds/${g.id}`} key={g.name}>
+                            <Link to={`/clanwars/guilds/${g.id}`} key={g.name + 'id'}>
                                 <Testimonial>
                                     <TestimonialContent>
                                         <TestimonialHeading>{g.name}</TestimonialHeading>
                                     </TestimonialContent>
                                     <TestimonialAvatar
-                                        src={g.iconUrl}
+                                        src={g.iconURL}
                                         name={`Пользователей: ${g.memberCount}`}
                                     />
                                 </Testimonial>
