@@ -19,6 +19,9 @@ import {useSelector} from 'react-redux';
 import {WarningTwoIcon} from '@chakra-ui/icons';
 import io from "socket.io-client"
 
+const queueId = window.location.href.split("/queues/")[1]
+const socket = io(process.env.REACT_APP_API_URL,{ query: { queueId : queueId }})
+
 export const Queue = () => {
     const [queue, setQueue] = useState({
         users: {name: 'a'},
@@ -37,8 +40,6 @@ export const Queue = () => {
     const params = useParams();
     const user = useSelector((state) => state.auth.user)
     const [algorithm, setAlgorithm] = useState("random")
-    const queueId = window.location.href.split("/queues/")[1]
-    const [socket] = useState(io(process.env.REACT_APP_API_URL,{ query: { queueId : queueId }}))
     const navigate = useNavigate()
 
     let isGameReady = (queue.QueueMember.length !== queue.QueueMember.filter(m => m.is_ready).length)
@@ -89,6 +90,7 @@ export const Queue = () => {
             .then(res => res.json())
             .then(res => {
                 setQueue(res);
+                console.log(res);
                 socket.emit('updateQueue', {
                     queueId: queue.id
                 })
