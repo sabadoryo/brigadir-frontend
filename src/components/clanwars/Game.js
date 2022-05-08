@@ -42,6 +42,12 @@ export const Game = () => {
           }
         }
       ]
+    },
+    Queue: {
+      users: {
+        id: "",
+        discord_id: null,
+      }
     }
   });
   const params = useParams()
@@ -121,7 +127,7 @@ export const Game = () => {
                   <Timecode />
                 </Timer>
               </Heading>
-            <Button onClick={onOpen}>Закончить игру</Button>
+            <Button onClick={onOpen} hidden={!isAuthUserHost()}>Закончить игру</Button>
             </>
           ) : (
             <>
