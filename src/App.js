@@ -11,6 +11,8 @@ import {Clanwar} from './components/clanwars/Clanwar';
 import secureFetch from './reusable/secureFetch';
 import QueuesList from './components/clanwars/Guild';
 import {Queue} from './components/clanwars/Queue';
+import { Game } from './components/clanwars/Game';
+import { Leaderboard } from './components/leaderboard/leaderboard';
 
 function App() {
     const dispatch = useDispatch()
@@ -20,6 +22,11 @@ function App() {
         if (hasToken()) {
             getUserInfo().then(res => {
                 dispatch(setUser(res))
+                secureFetch(`${process.env.REACT_APP_API_URL}/api/auth/check`, {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` , 'Content-Type': 'application/json'},
+                    body: JSON.stringify(res)
+                  })
             })
         }
     }, [dispatch])
@@ -36,6 +43,8 @@ function App() {
                     <Route path="/clanwars" element={<Clanwar/>}/>
                     <Route path="/clanwars/guilds/:id" element={<QueuesList/>}/>
                     <Route path="/clanwars/guilds/:guild_id/queues/:queue_id" element={<Queue/>}/>
+                    <Route path="/games/:game_id" element={<Game/>}/>
+                    <Route path="/leaderboard" element={<Leaderboard/>}/>
                     <Route path="/" element={<Welcome/>}/>
                 </Routes>
             </Header>

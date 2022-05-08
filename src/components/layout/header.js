@@ -36,6 +36,8 @@ import {ReactText} from 'react';
 
 import swords from '../../resources/img/icons/swords.svg';
 import home from '../../resources/img/icons/home.svg';
+import leaderboard from '../../resources/img/icons/leaderboard.svg';
+
 
 import logo from '../../resources/img/kurultay-img.svg';
 import logoText from '../../resources/img/logo-text.svg';
@@ -48,6 +50,7 @@ interface LinkItemProps {
 const LinkItems: Array<LinkItemProps> = [
     {name: 'Главная', icon: home, custom: true, url: '/'},
     {name: 'Clan Wars', icon: swords, custom: true, url: 'clanwars'},
+    {name: 'Топ', icon: leaderboard, custom: true, url: 'leaderboard', color: 'white'}
 ];
 
 export default function SidebarWithHeader({children}: {
@@ -131,7 +134,7 @@ const NavItem = ({icon, custom, url, children, ...rest}: NavItemProps) => {
                 }}
                 {...rest}>
                 {custom ? (
-                    <img src={icon} alt="" style={{width: '24px', marginRight: '1rem'}}/>
+                    <img src={icon} alt="" style={{width: '24px', marginRight: '1rem', color:'white'}}/>
                 ) : icon && (
                     <Icon
                         mr="4"

@@ -25,7 +25,6 @@ export function Authenticate() {
     .then(res => res.json())
     .then(
       async (result) => {
-        console.log(result)
         dispatch(authenticate(result))
         window.location.href = "/"
       },

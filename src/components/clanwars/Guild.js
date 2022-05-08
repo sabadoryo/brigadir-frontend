@@ -53,13 +53,17 @@ export default function QueuesList() {
     const toast = useToast()
     const toastIdRef = React.useRef()
     const [loading, setLoading] = useState(true);
+    const [textChannelId, setTextChannelId] = useState();
+    const [textChannels, setTextChannels] = useState([{name: null, id: null}])
+
 
     const {isOpen, onOpen, onClose} = useDisclosure()
 
     const isNameError = name === ''
     const isDisciplineError = disciplineId === undefined
     const isVoiceChannelsError = voiceChannelId === undefined
-    const isValidForm = !name || !disciplineId || !voiceChannelId
+    const isTextChannelsError = textChannelId === undefined
+    const isValidForm = !name || !disciplineId || !voiceChannelId || !textChannelId
 
     useEffect(() => {
 
@@ -76,11 +80,20 @@ export default function QueuesList() {
             setVoiceChannels(res)
         })
 
+        getTextChannels(params.id).then(res => {
+            setTextChannels(res)
+          })
+
     }, [params])
 
     function addToast(message, status = 'error') {
         toastIdRef.current = toast({description: message, status: status})
     }
+
+    function getTextChannels() {
+        return secureFetch(`${process.env.REACT_APP_API_URL}/api/guilds/${params.id}/channels?type=text`)
+          .then(res => res.json())
+    } 
 
     return !loading ? (
             <Container maxW={'100vw'} paddingTop={'20px'}>
@@ -126,7 +139,7 @@ export default function QueuesList() {
 
                                 <FormControl mt={4} isInvalid={isVoiceChannelsError}>
                                     <Select onChange={(e) => setVoiceChannelId(e.target.value)}>
-                                        <option value={null}>Выберите дисциплину</option>
+                                        <option value={null}>Выберите канал сбора</option>
                                         {voiceChannels.map(v => (
                                             <option value={v.id} key={v.id}>{v.name}</option>
                                         ))}
@@ -140,11 +153,27 @@ export default function QueuesList() {
                                     )}
                                 </FormControl>
 
+                                <FormControl mt={4} isInvalid={isTextChannelsError}>
+                                    <Select onChange={(e) => setTextChannelId(e.target.value)}>
+                                        <option value={null}>Выберите канал оповещения</option>
+                                        {textChannels.map(v => (
+                                        <option value={v.id} key={v.id}>{v.name}</option>
+                                        ))}
+                                    </Select>
+                                    {!isTextChannelsError ? (
+                                        <FormHelperText>
+                                            Выберите канал на котором будет анонс игры!
+                                        </FormHelperText>
+                                    ) : (
+                                        <FormErrorMessage>Выбор канала обязателен</FormErrorMessage>
+                                    )}
+                                </FormControl>
+
                             </ModalBody>
 
                             <ModalFooter>
                                 <Button mr={3}
-                                        onClick={() => createQueue(name, disciplineId, voiceChannelId, params.id, user, navigate, addToast)}
+                                        onClick={() => createQueue(name, disciplineId, voiceChannelId, textChannelId, params.id, user, navigate, addToast)}
                                         isDisabled={isValidForm}
                                 >
                                     Создать
@@ -166,6 +195,7 @@ export default function QueuesList() {
                                 discipline={q.discipline}
                                 memberCount={q.QueueMember.length}
                                 date={q.created_at}
+                                key={q.id + 'id'}
                             />
                         )
                     })}
@@ -178,7 +208,7 @@ export default function QueuesList() {
 }
 
 
-function createQueue(name, discipline_id, voice_channel_id, guild_id, user, navigate, addToast) {
+function createQueue(name, discipline_id, voice_channel_id, text_channel_id,guild_id, user, navigate, addToast) {
     const requestOptions = {
         headers: {Authorization: `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json'},
         method: 'POST',
@@ -187,6 +217,7 @@ function createQueue(name, discipline_id, voice_channel_id, guild_id, user, navi
             name,
             discipline_id,
             voice_channel_id,
+            text_channel_id,
             guild_id,
         })
     }

@@ -1,15 +1,6 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useRef, useState} from 'react'
 import {
-    Avatar,
-    TableContainer,
-    Table,
-    Thead,
-    Tr,
-    Th,
-    Tbody,
-    Td,
     Text,
-    TableCaption,
     Flex,
     Container,
     Button,
@@ -17,12 +8,16 @@ import {
     Box,
     Heading,
     Tooltip,
+    Select,
+    Icon,
 } from '@chakra-ui/react'
+import {UsersTable} from '../../reusable/queueUsersTable';
 
-import {useParams} from 'react-router';
+import {useParams, useNavigate} from 'react-router';
 import secureFetch from '../../reusable/secureFetch';
 import {useSelector} from 'react-redux';
-import {CloseIcon, WarningTwoIcon} from '@chakra-ui/icons';
+import {WarningTwoIcon} from '@chakra-ui/icons';
+import io from "socket.io-client"
 
 export const Queue = () => {
     const [queue, setQueue] = useState({
@@ -31,7 +26,8 @@ export const Queue = () => {
         voice_channel_id: '',
         channel: {name: ''},
         QueueMember: [{
-            users: {name: ''}
+            users: {name: ''},
+            is_ready: false,
         }],
         discipline: {
             name: ''
@@ -40,16 +36,136 @@ export const Queue = () => {
     });
     const params = useParams();
     const user = useSelector((state) => state.auth.user)
+    const [algorithm, setAlgorithm] = useState("random")
+    const queueId = window.location.href.split("/queues/")[1]
+    const [socket] = useState(io('http://localhost:3000',{ query: { queueId : queueId }}))
+    const navigate = useNavigate()
+
+    let isGameReady = (queue.QueueMember.length !== queue.QueueMember.filter(m => m.is_ready).length)
 
     useEffect(() => {
+        socket.on('updateQueue', payload => {
+            console.log('keklol')
+            setQueue(payload);
+        });
+        socket.on('clanwarStarted', payload => {
+            navigate(`/games/${payload.id}`)
+        })
         getQueue(params.queue_id)
             .then(res => {
                 setQueue(res)
             })
+        return () => {
+            console.log('connection removed')
+            socket.disconnect({
+                query: {
+                    queueId : queueId
+                  }
+            })
+        }
     }, [])
 
+    async function getQueue() {
+        return secureFetch(`${process.env.REACT_APP_API_URL}/api/queues/${params.queue_id}`)
+            .then(res => res.json())
+    }
+    
+    
+    function isAuthUserInQueue() {
+        const queueMemberIds = queue.QueueMember.map(m => m.users.discord_id)
+        return queueMemberIds.includes(user.id)
+    }
+    
+    function joinQueue() {
+        const requestOptions = {
+            headers: {Authorization: `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json'},
+            method: 'POST',
+            body: JSON.stringify({
+                user_discord_id: user.id
+            })
+        }
+    
+        return secureFetch(`${process.env.REACT_APP_API_URL}/api/queues/${queue.id}/join`, requestOptions)
+            .then(res => res.json())
+            .then(res => {
+                setQueue(res);
+                socket.emit('updateQueue', {
+                    queueId: queue.id
+                })
+            })
+    }
+    
+    function leaveQueue() {
+        const requestOptions = {
+            headers: {Authorization: `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json'},
+            method: 'POST',
+            body: JSON.stringify({
+                user_discord_id: user.id
+            })
+        }
+    
+        return secureFetch(`${process.env.REACT_APP_API_URL}/api/queues/${queue.id}/leave`, requestOptions)
+            .then(res => res.json())
+            .then(res => {
+                setQueue(res);
+                socket.emit('updateQueue', {
+                    queueId: queue.id
+                })
+            })
+    }
+    
+    function openDiscordChannelPage(url) {
+        window.open(url, "_blank")
+    }
+    
+    function isAuthUserHost() {
+        return queue.users.discord_id === user.id
+    }
+    
+    function closeQueue() {
+        const requestOptions = {
+            headers: {Authorization: `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json'},
+            method: 'POST',
+            body: JSON.stringify({
+                user_discord_id: user.discord_id
+            })
+        }
+
+        socket.on('updateQueue', payload => {
+            setQueue(payload);
+        });
+    
+        return secureFetch(`${process.env.REACT_APP_API_URL}/api/queues/${queue.id}/close`, requestOptions)
+            .then(res => res.json())
+            .then(res => {
+                setQueue(res);
+                socket.emit('updateQueue', {
+                    queueId: queue.id
+                })
+            })
+    }
+
+    async function handleGameStart() {
+        const requestOptions = {
+            headers: {Authorization: `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json'},
+            method: 'POST',
+            body: JSON.stringify({
+                user_discord_id: user.id,
+                queue_id: queue.id,
+            })
+        }
+    
+        const clanwar = await secureFetch(`${process.env.REACT_APP_API_URL}/api/games`, requestOptions)
+            .then(res => res.json());
+
+        socket.emit('startClanwar',{
+            queueId: queue.id,
+            clanwarId: clanwar.id,
+        });
+    }
+
     return queue.is_opened ? (
-            <Container marginTop={10}>
+            <Container marginTop={10} maxWidth={700}>
                 <Flex justifyContent={'space-between'} alignItems={'center'}>
                     <Flex direction={'column'} gap={'1px'}>
                         <Text fontSize={'xs'}>Канал сбора: <Link color={'teal.400'}
@@ -57,59 +173,37 @@ export const Queue = () => {
                         <Text fontSize={'xs'}>Хост: {queue.users.name}</Text>
                         <Text fontSize={'xs'}>Дисциплина: {queue.discipline.name}</Text>
                     </Flex>
+                    <Select maxW={200} hidden={!isAuthUserHost()} variant='outline'>
+                        <option value="random">Рандомные команды</option>
+                        <option value="teams" disabled>Готовые команды</option>
+                    </Select>
                     {!isAuthUserInQueue(queue.QueueMember, user) ? (
-                        <Button size='lg' onClick={() => joinQueue(user, queue.id, setQueue)}
-                                hidden={isAuthUserHost(queue, user)}>
+                        <Button size='lg' onClick={() => joinQueue()}
+                                hidden={isAuthUserHost()}>
                             Войти
                         </Button>
                     ) : (
-                        <Button variant='outline' size='lg' onClick={() => leaveQueue(user, queue.id, setQueue)}
-                                hidden={isAuthUserHost(queue, user)}>
+                        <Button variant='outline' size='lg' onClick={() => leaveQueue()}
+                                hidden={isAuthUserHost()}>
                             Покинуть
                         </Button>
                     )}
+                    <Button onClick={() => closeQueue()}
+                            hidden={!isAuthUserHost()} variant='outline'>Закрыть очередь</Button>
                 </Flex>
-                <TableContainer>
-                    <Table variant={'simple'}>
-                        <TableCaption>
-                            Войдите в канал сбора, чтобы подтвердить готовность
-                        </TableCaption>
-                        <Thead>
-                            <Tr>
-                                <Th>Список очереди: {queue.name}</Th>
-                                <Th></Th>
-                            </Tr>
-                        </Thead>
-                        <Tbody>
-                            {queue.QueueMember.map(m => {
-                                return (
-                                    <Tr key={m.id + 'lol'}>
-                                        <Td>
-                                            <Flex justify={'start'} gap={'5px'} alignItems={'center'}>
-                                                <Avatar
-                                                    src={`https://cdn.discordapp.com/avatars/${m.users.discord_id}/${m.users.avatar_hash}`}/>
-                                                <Text>{m.users.name}</Text>
-                                            </Flex>
-                                        </Td>
-                                        {isAuthUserHost(queue, user) && isNotHimself(m, user) ? (
-                                                <Td onClick={() => kickUser(queue, m.users, setQueue)}>
-                                                    <CloseIcon></CloseIcon>
-                                                </Td>
-                                            )
-                                            :
-                                            <Td></Td>
-                                        }
-                                    </Tr>
-                                )
-                            })}
-                        </Tbody>
-                    </Table>
-                </TableContainer>
-                <Flex justify={'space-between'}>
-                    <Button onClick={() => closeQueue(params.queue_id, user, setQueue)}
-                            hidden={!isAuthUserHost(queue, user)} variant='outline'>Закрыть очередь</Button>
-                    <Tooltip label="Пока недопступно" shouldWrapChildren hasArrow mt='3'>
-                        <Button isDisabled>Начать КВ</Button>
+                {algorithm === "random" ? (
+                    <UsersTable users={queue.QueueMember} caption={`Выбран алгоритм: ${algorithm}, участники будут распределны рандомно`} name={`Список очереди: ${queue.name}`} queue={queue} setQueue={setQueue}></UsersTable>
+                ) : (
+                                    
+                    <Flex gap={10}>              
+                        {/* <UsersTable users={teamA.members} caption={``} name={`Список очереди: ${queue.name}`} queue={queue} setQueue={setQueue}></UsersTable>
+                        <UsersTable users={teamB.members} caption={``} name={`Список очереди: ${queue.name}`} queue={queue} setQueue={setQueue}></UsersTable> */}
+
+                    </Flex>
+                )}
+                <Flex justify={'center'}>
+                    <Tooltip label="Все участники должны быть на голосовом канале где проходит сбор, чтобы начать Clan War" shouldWrapChildren hasArrow mt='3'>
+                        <Button isDisabled={false} onClick={handleGameStart}><img alt="swords" src='/static/media/swords.456584b5e521bba48a9e6319434c60ef.svg' width={'30px'}></img></Button>
                     </Tooltip>
                 </Flex>
             </Container>
@@ -125,93 +219,4 @@ export const Queue = () => {
                 </Text>
             </Box>
         )
-}
-
-async function getQueue(queueId) {
-    return secureFetch(`${process.env.REACT_APP_API_URL}/api/queues/${queueId}`)
-        .then(res => res.json())
-}
-
-
-function isAuthUserInQueue(queueMembers, authUser) {
-    const queueMemberIds = queueMembers.map(m => m.users.discord_id)
-    return queueMemberIds.includes(authUser.id)
-}
-
-function joinQueue(user, queueId, setQueue) {
-    const requestOptions = {
-        headers: {Authorization: `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json'},
-        method: 'POST',
-        body: JSON.stringify({
-            user_discord_id: user.id
-        })
-    }
-
-    return secureFetch(`${process.env.REACT_APP_API_URL}/api/queues/${queueId}/join`, requestOptions)
-        .then(res => res.json())
-        .then(res => {
-            console.log(res)
-            setQueue(res);
-        })
-}
-
-function leaveQueue(user, queueId, setQueue) {
-    const requestOptions = {
-        headers: {Authorization: `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json'},
-        method: 'POST',
-        body: JSON.stringify({
-            user_discord_id: user.id
-        })
-    }
-
-    return secureFetch(`${process.env.REACT_APP_API_URL}/api/queues/${queueId}/leave`, requestOptions)
-        .then(res => res.json())
-        .then(res => {
-            setQueue(res);
-        })
-}
-
-function openDiscordChannelPage(url) {
-    window.open(url, "_blank")
-}
-
-function isAuthUserHost(queue, user) {
-    return queue.users.discord_id === user.id
-}
-
-function kickUser(queue, user, setQueue) {
-    const requestOptions = {
-        headers: {Authorization: `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json'},
-        method: 'POST',
-        body: JSON.stringify({
-            user_discord_id: user.discord_id
-        })
-    }
-
-    return secureFetch(`${process.env.REACT_APP_API_URL}/api/queues/${queue.id}/kick`, requestOptions)
-        .then(res => res.json())
-        .then(res => {
-            setQueue(res);
-        })
-}
-
-function isNotHimself(member, user) {
-    return member.users.discord_id !== user.id
-}
-
-function closeQueue(queueId, user, setQueue) {
-    console.log(user)
-    const requestOptions = {
-        headers: {Authorization: `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json'},
-        method: 'POST',
-        body: JSON.stringify({
-            user_discord_id: user.discord_id
-        })
-    }
-
-    return secureFetch(`${process.env.REACT_APP_API_URL}/api/queues/${queueId}/close`, requestOptions)
-        .then(res => res.json())
-        .then(res => {
-            setQueue(res);
-        })
 }
