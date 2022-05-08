@@ -38,7 +38,7 @@ export const Queue = () => {
     const user = useSelector((state) => state.auth.user)
     const [algorithm, setAlgorithm] = useState("random")
     const queueId = window.location.href.split("/queues/")[1]
-    const [socket] = useState(io('http://localhost:3000',{ query: { queueId : queueId }}))
+    const [socket] = useState(io(process.env.REACT_APP_API_URL,{ query: { queueId : queueId }}))
     const navigate = useNavigate()
 
     let isGameReady = (queue.QueueMember.length !== queue.QueueMember.filter(m => m.is_ready).length)
