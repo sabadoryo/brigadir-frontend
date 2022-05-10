@@ -4,7 +4,7 @@ import Header from './components/layout/header'
 import React, {useEffect} from 'react';
 import Login from './components/login/Login'
 import hasToken from './components/login/isAuthenticated';
-import {setUser} from './redux/slices/authSlice';
+import {setUser, logout} from './redux/slices/authSlice';
 import {useDispatch} from 'react-redux'
 import {Profile} from './components/profile/Profile';
 import {Clanwar} from './components/clanwars/Clanwar';
@@ -13,10 +13,19 @@ import QueuesList from './components/clanwars/Guild';
 import {Queue} from './components/clanwars/Queue';
 import { Game } from './components/clanwars/Game';
 import { Leaderboard } from './components/leaderboard/leaderboard';
+import { useToast } from '@chakra-ui/react';
+import { useNavigate } from 'react-router'
 
 function App() {
     const dispatch = useDispatch()
+    const toast = useToast()
+    const navigate = useNavigate()
 
+    function triggerToast(description) {
+        toast({
+            description
+          })
+    }
 
     useEffect(() => {
         if (hasToken()) {
@@ -27,6 +36,10 @@ function App() {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` , 'Content-Type': 'application/json'},
                     body: JSON.stringify(res)
                   })
+            }).catch(err => {
+                dispatch(logout())
+                triggerToast("Re-login is required!")
+                navigate("/")
             })
         }
     }, [dispatch])
@@ -48,6 +61,7 @@ function App() {
                     <Route path="/" element={<Welcome/>}/>
                 </Routes>
             </Header>
+
         </div>
     );
 }

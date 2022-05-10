@@ -20,7 +20,9 @@ import {WarningTwoIcon} from '@chakra-ui/icons';
 import io from "socket.io-client"
 
 const queueId = window.location.href.split("/queues/")[1]
-const socket = io(process.env.REACT_APP_API_URL,{ query: { queueId : queueId }})
+const socket = io(process.env.REACT_APP_API_URL,{ query: { queueId : queueId }}, {
+    reconnectionDelay: 2000,
+})
 
 export const Queue = () => {
     const [queue, setQueue] = useState({
