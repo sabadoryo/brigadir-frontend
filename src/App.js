@@ -15,6 +15,7 @@ import { Game } from './components/clanwars/Game';
 import { Leaderboard } from './components/leaderboard/leaderboard';
 import { useToast } from '@chakra-ui/react';
 import { useNavigate } from 'react-router'
+import { DisplayProfile } from './components/profile/DisplayProfile';
 
 function App() {
     const dispatch = useDispatch()
@@ -53,6 +54,7 @@ function App() {
             <Header>
                 <Routes>
                     <Route path="/profile" element={<Profile/>}/>
+                    <Route path="/profiles/:discord_id" element={<DisplayProfile/>}/>
                     <Route path="/clanwars" element={<Clanwar/>}/>
                     <Route path="/clanwars/guilds/:id" element={<QueuesList/>}/>
                     <Route path="/clanwars/guilds/:guild_id/queues/:queue_id" element={<Queue/>}/>

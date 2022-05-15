@@ -1,8 +1,9 @@
 import { CheckIcon, CloseIcon } from '@chakra-ui/icons'
-import { Avatar, Flex, TableCaption, TableContainer, Tbody, Td, Th, Thead, Tr, Text, Table } from '@chakra-ui/react'
+import { Avatar, Flex, TableCaption, TableContainer, Tbody, Td, Th, Thead, Tr, Text, Table, Link } from '@chakra-ui/react'
 import React from 'react'
 import { useSelector } from 'react-redux'
 import secureFetch from './secureFetch'
+import {Link as RouterLink} from 'react-router-dom';
 
 export const UsersTable = (props) => {
     const users = props.users
@@ -33,7 +34,7 @@ export const UsersTable = (props) => {
                                                         <CheckIcon marginRight={5} w={6} h={6} color={m.is_ready ? 'green' : 'grey'}></CheckIcon>
                                                         <Avatar
                                                             src={`https://cdn.discordapp.com/avatars/${m.users.discord_id}/${m.users.avatar_hash}`}/>
-                                                        <Text>{m.users.name}</Text>
+                                                        <Text> <Link to={`/profiles/${m.users.discord_id}`} as={RouterLink} style={{textDecoration: 'none'}} _focus={{boxShadow: 'none'}}>{m.users.name}</Link></Text>
                                                     </Flex>
                                                 </Td>
                                                 {isAuthUserHost(queue, user) && isNotHimself(m, user) ? (
