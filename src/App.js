@@ -16,6 +16,7 @@ import { Leaderboard } from './components/leaderboard/leaderboard';
 import { useToast } from '@chakra-ui/react';
 import { useNavigate } from 'react-router'
 import { DisplayProfile } from './components/profile/DisplayProfile';
+import Gift from './components/gift/Gift';
 
 function App() {
     const dispatch = useDispatch()
@@ -60,6 +61,7 @@ function App() {
                     <Route path="/clanwars/guilds/:guild_id/queues/:queue_id" element={<Queue/>}/>
                     <Route path="/games/:game_id" element={<Game/>}/>
                     <Route path="/leaderboard" element={<Leaderboard/>}/>
+                    <Route path="/gifts" element={<Gift/>}/>
                     <Route path="/" element={<Welcome/>}/>
                 </Routes>
             </Header>
