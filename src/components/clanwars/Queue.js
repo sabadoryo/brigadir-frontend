@@ -44,7 +44,7 @@ export const Queue = () => {
     const [algorithm, setAlgorithm] = useState("random")
     const navigate = useNavigate()
 
-    let isGameReady = (queue.QueueMember.length !== queue.QueueMember.filter(m => m.is_ready).length)
+    let isGameReady = (queue.QueueMember.length === queue.QueueMember.filter(m => m.is_ready).length) && (queue.QueueMember.length >= 10)
 
     useEffect(() => {
         socket.on('updateQueue', payload => {
@@ -207,7 +207,7 @@ export const Queue = () => {
                 )}
                 <Flex justify={'center'}>
                     <Tooltip label="Все участники должны быть на голосовом канале где проходит сбор, чтобы начать Clan War" shouldWrapChildren hasArrow mt='3'>
-                        <Button isDisabled={isGameReady} onClick={handleGameStart}><img alt="swords" src='/static/media/swords.456584b5e521bba48a9e6319434c60ef.svg' width={'30px'}></img></Button>
+                        <Button isDisabled={!isGameReady} onClick={handleGameStart}><img alt="swords" src='/static/media/swords.456584b5e521bba48a9e6319434c60ef.svg' width={'30px'}></img></Button>
                     </Tooltip>
                 </Flex>
             </Container>
